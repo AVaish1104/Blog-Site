@@ -240,8 +240,6 @@ STORAGES = {
 # On Vercel there is no collectstatic step: WhiteNoise serves files straight from
 # the app and project static directories.
 WHITENOISE_USE_FINDERS = ON_VERCEL
-if ON_VERCEL:
-    STATIC_ROOT = None  # nothing is collected on Vercel; avoids a WhiteNoise warning
 
 IMAGE_MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 IMAGE_MAX_PIXELS = 40_000_000
