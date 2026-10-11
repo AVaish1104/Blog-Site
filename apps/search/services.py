@@ -44,10 +44,17 @@ def highlight_snippet(text, terms, radius=110):
         start, end = max(0, center - radius), min(len(text), center + radius)
     else:
         start, end = 0, min(len(text), radius * 2)
-    snippet = escape(text[start:end])
+    raw = text[start:end]
     if terms:
-        pattern = re.compile("|".join(re.escape(t) for t in terms), re.IGNORECASE)
-        snippet = pattern.sub(lambda m: f"<mark>{m.group(0)}</mark>", snippet)
+        pattern = re.compile("(" + "|".join(re.escape(t) for t in terms) + ")", re.IGNORECASE)
+        # Split first, then escape each piece, so a match never lands inside an entity.
+        pieces = pattern.split(raw)
+        snippet = "".join(
+            f"<mark>{escape(piece)}</mark>" if i % 2 else escape(piece)
+            for i, piece in enumerate(pieces)
+        )
+    else:
+        snippet = escape(raw)
     prefix = "…" if start > 0 else ""
     suffix = "…" if end < len(text) else ""
     return mark_safe(f"{prefix}{snippet}{suffix}")  # noqa: S308 — content escaped above

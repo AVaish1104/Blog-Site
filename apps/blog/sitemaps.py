@@ -1,8 +1,22 @@
-from django.contrib.sitemaps import Sitemap
+from urllib.parse import urlsplit
+
+from django.conf import settings
+from django.contrib.sitemaps import Sitemap as BaseSitemap
 from django.urls import reverse
 from django.utils import timezone
 
 from .models import Author, Category, Post, Tag
+
+
+class Sitemap(BaseSitemap):
+    """Builds absolute URLs from SITE_URL instead of the request's Host header."""
+
+    @property
+    def protocol(self):
+        return urlsplit(settings.SITE_URL).scheme or "https"
+
+    def get_domain(self, site=None):
+        return urlsplit(settings.SITE_URL).netloc
 
 
 class PostSitemap(Sitemap):

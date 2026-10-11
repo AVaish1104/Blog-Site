@@ -106,9 +106,15 @@ class Command(BaseCommand):
     def seed(self):
         now = timezone.now()
         existing_tags = set(Tag.objects.values_list("pk", flat=True))
-        author = Author.objects.create(is_demo=True, **demo.AUTHOR)
+        author, _ = Author.objects.get_or_create(
+            slug=demo.AUTHOR["slug"], defaults={**demo.AUTHOR, "is_demo": True}
+        )
         categories = {}
         for position, (name, slug, description) in enumerate(demo.CATEGORIES):
+            existing = Category.objects.filter(name__iexact=name).first()
+            if existing:
+                categories[slug] = existing
+                continue
             categories[slug], _ = Category.objects.get_or_create(
                 slug=slug,
                 defaults={

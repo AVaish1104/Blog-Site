@@ -8,5 +8,7 @@ Confirm your subscription by opening this link:
 
 The link is valid for 7 days. If you didn't ask for this, ignore this email and you won't hear from us again.
 
+To stop receiving emails at any time: {{ unsubscribe_url }}
+
 — {{ site_name }}
 {% endautoescape %}

@@ -4,7 +4,7 @@
   <ul>
     {% for error in form.non_field_errors %}<li>{{ error }}</li>{% endfor %}
     {% for field in form %}{% for error in field.errors %}
-      <li>{% if field.is_hidden %}{{ error }}{% else %}<a href="#{{ field.id_for_label }}">{{ field.label|truncatechars:60 }}</a>: {{ error }}{% endif %}</li>
+      <li>{% if field.is_hidden %}{{ error }}{% elif no_links %}{{ field.label|truncatechars:60 }}: {{ error }}{% else %}<a href="#{{ field.id_for_label }}">{{ field.label|truncatechars:60 }}</a>: {{ error }}{% endif %}</li>
     {% endfor %}{% endfor %}
   </ul>
 </div>

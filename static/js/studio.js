@@ -124,7 +124,8 @@
   }
 
   function initUnsavedWarning(form) {
-    var dirty = false;
+    // A form re-shown with errors holds edits that have NOT been saved yet.
+    var dirty = !!form.querySelector("[data-error-summary]");
     form.addEventListener("input", function () { dirty = true; });
     form.addEventListener("change", function () { dirty = true; });
     form.addEventListener("submit", function (event) {
@@ -142,18 +143,28 @@
 
   function initCopyButtons() {
     document.querySelectorAll("[data-copy]").forEach(function (button) {
+      var original = button.textContent;
+      var timer;
       button.hidden = false;
+      function flash(label) {
+        clearTimeout(timer);
+        button.textContent = label;
+        timer = setTimeout(function () { button.textContent = original; }, 1500);
+      }
       button.addEventListener("click", function () {
         var input = document.getElementById(button.getAttribute("data-copy"));
         if (!input) return;
+        input.focus();
         input.select();
-        var done = function () {
-          var label = button.textContent;
-          button.textContent = "Copied";
-          setTimeout(function () { button.textContent = label; }, 1500);
-        };
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(input.value).then(done, function () {});
+        function fallback() {
+          var ok = false;
+          try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+          flash(ok ? "Copied" : "Press Ctrl+C");
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(input.value).then(function () { flash("Copied"); }, fallback);
+        } else {
+          fallback();
         }
       });
     });

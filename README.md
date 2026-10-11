@@ -8,7 +8,7 @@ Django 5.2 LTS, SQLite (or PostgreSQL), and a small hand-written design system.
   pages, full-text search, related articles, RSS/Atom feeds, sitemap, social and
   search-engine metadata, moderated comments and a double-opt-in newsletter.
 - **Editors:** sign-in with brute-force lockout, a dashboard of real publishing
-  data, a Markdown editor with live preview in the public layout, drafts,
+  data, a Markdown editor with an on-demand preview (opens in a new tab) using the public article layout, drafts,
   scheduled and published states, image library with validated uploads, topic,
   tag and author management, comment moderation, and a subscriber list with CSV
   export.
@@ -136,7 +136,9 @@ All configuration is through environment variables, optionally loaded from
 | `COMMENTS_ENABLED` | `true` | Close comments site-wide. |
 | `DJANGO_ADMIN_PATH` | `django-admin/` | Built-in admin for superusers. Blank disables it. |
 | `DJANGO_BEHIND_PROXY` | `false` | Trust `X-Forwarded-Proto` from your load balancer. |
-| `DJANGO_TRUST_X_FORWARDED_FOR` | `false` | Use the client IP from `X-Forwarded-For` for rate limits and lockouts. Enable only behind a trusted proxy. |
+| `DJANGO_TRUST_X_FORWARDED_FOR` | `false` | Use `X-Forwarded-For` for rate limits and lockouts. Enable only behind a trusted proxy. |
+| `DJANGO_TRUSTED_PROXY_COUNT` | `1` | Number of proxies that append to `X-Forwarded-For`; the client IP is read that many entries from the right. |
+| `NEWSLETTER_PROVIDER` | `apps.newsletter.providers.LocalProvider` | Dotted path to a provider adapter class. |
 | `DJANGO_HSTS_SECONDS` | 30 days | Set `DJANGO_HSTS_INCLUDE_SUBDOMAINS=true` only if every subdomain is HTTPS. |
 
 ### Email and the newsletter: what is and isn't sent
@@ -193,7 +195,7 @@ permanently (301) to the new one.
 - **Headers:** a strict Content Security Policy applies (no inline scripts or styles, `frame-ancestors 'none'`), along with HSTS, secure cookies and `nosniff` in production.
 - **Rate limits:** comments and newsletter sign-ups are rate-limited with database-backed counters, which hold across processes and restarts. IP addresses are stored only as keyed hashes.
 - **Spam defences:** both public forms use a honeypot field. Comment forms also carry a signed timestamp that rejects instant or stale submissions.
-- **Newsletter links:** confirm and unsubscribe links are signed tokens. Unsubscribing requires clicking a button, so email link scanners can't unsubscribe people.
+- **Newsletter links:** confirm and unsubscribe links are signed tokens. Both need a button click, so email link scanners can't confirm or unsubscribe anyone. A confirmation link only works for the most recent sign-up, and never re-subscribes someone who has unsubscribed.
 
 ### Search
 

@@ -43,10 +43,11 @@ def process_upload(uploaded_file):
     try:
         with warnings.catch_warnings():
             warnings.simplefilter("error", PILImage.DecompressionBombWarning)
-            probe = PILImage.open(io.BytesIO(raw))
+            formats = list(ALLOWED_FORMATS)  # never hand other decoders untrusted bytes
+            probe = PILImage.open(io.BytesIO(raw), formats=formats)
             image_format = probe.format
             probe.verify()
-            image = PILImage.open(io.BytesIO(raw))
+            image = PILImage.open(io.BytesIO(raw), formats=formats)
             image.load()
     except (PILImage.DecompressionBombError, PILImage.DecompressionBombWarning):
         raise ValidationError("This image has too many pixels.", code="too_many_pixels") from None

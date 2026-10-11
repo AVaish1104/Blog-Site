@@ -19,6 +19,7 @@ from apps.comments.models import Comment
 from apps.images.models import Image
 from apps.images.services import create_image
 from apps.newsletter.models import Subscriber
+from apps.newsletter.services import unsubscribe_url
 
 from .access import EditorRequiredMixin
 from .forms import (
@@ -234,7 +235,7 @@ class PostPreviewView(EditorRequiredMixin, View):
             for name in form.cleaned_data["tags"]
         ]
         note = "unsaved changes shown with the public layout. Nothing has been saved."
-        if form.cleaned_data.get("new_cover"):
+        if request.FILES.get("new_cover"):
             note += " The newly chosen cover image appears after saving."
         return render(
             request,
@@ -638,7 +639,9 @@ class SubscriberExportView(EditorRequiredMixin, View):
         stamp = timezone.localtime().strftime("%Y%m%d")
         response["Content-Disposition"] = f'attachment; filename="subscribers-{stamp}.csv"'
         writer = csv.writer(response)
-        writer.writerow(["email", "status", "subscribed_at", "confirmed_at", "consent_text"])
+        writer.writerow(
+            ["email", "status", "subscribed_at", "confirmed_at", "consent_text", "unsubscribe_url"]
+        )
         status = request.GET.get("status", Subscriber.Status.ACTIVE)
         queryset = Subscriber.objects.order_by("created_at")
         if status in Subscriber.Status.values:
@@ -653,6 +656,7 @@ class SubscriberExportView(EditorRequiredMixin, View):
                     sub.created_at.isoformat(),
                     sub.confirmed_at.isoformat() if sub.confirmed_at else "",
                     sub.consent_text,
+                    unsubscribe_url(sub),
                 ]
             )
         return response

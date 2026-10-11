@@ -20,13 +20,28 @@ pytestmark = [pytest.mark.e2e, pytest.mark.django_db(transaction=True)]
 
 VIEWPORTS = {"laptop": (1440, 900), "phone": (390, 844)}
 PUBLIC_PAGES = [
-    "/", "/posts/", "/posts/editing-is-mostly-subtraction/", "/topics/", "/topics/design/",
-    "/tags/", "/authors/iris-calloway/", "/search/?q=typography", "/search/?q=nomatch",
-    "/newsletter/", "/studio/login/", "/posts/missing/",
+    "/",
+    "/posts/",
+    "/posts/editing-is-mostly-subtraction/",
+    "/topics/",
+    "/topics/design/",
+    "/tags/",
+    "/authors/iris-calloway/",
+    "/search/?q=typography",
+    "/search/?q=nomatch",
+    "/newsletter/",
+    "/studio/login/",
+    "/posts/missing/",
 ]
 STUDIO_PAGES = [
-    "/studio/", "/studio/posts/", "/studio/posts/new/", "/studio/images/", "/studio/topics/",
-    "/studio/authors/", "/studio/comments/", "/studio/subscribers/",
+    "/studio/",
+    "/studio/posts/",
+    "/studio/posts/new/",
+    "/studio/images/",
+    "/studio/topics/",
+    "/studio/authors/",
+    "/studio/comments/",
+    "/studio/subscribers/",
 ]
 
 

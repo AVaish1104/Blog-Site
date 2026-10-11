@@ -289,6 +289,9 @@ ADMIN_PATH = env("DJANGO_ADMIN_PATH", "django-admin/")
 # --- Security ----------------------------------------------------------------
 
 TRUST_X_FORWARDED_FOR = env_bool("DJANGO_TRUST_X_FORWARDED_FOR", ON_VERCEL)
+# Number of trusted proxies appending to X-Forwarded-For; the client IP is read
+# that many entries from the right.
+TRUSTED_PROXY_COUNT = env_int("DJANGO_TRUSTED_PROXY_COUNT", 1)
 X_FRAME_OPTIONS = "DENY"
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"

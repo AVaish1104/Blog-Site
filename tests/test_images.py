@@ -32,7 +32,7 @@ def test_rejects_svg():
 
 
 def test_rejects_unsupported_real_image_format():
-    with pytest.raises(ValidationError, match="Unsupported"):
+    with pytest.raises(ValidationError, match="JPEG, PNG or WebP"):
         process_upload(upload("a.gif", image_bytes("GIF"), "image/gif"))
 
 

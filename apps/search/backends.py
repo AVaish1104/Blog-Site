@@ -129,12 +129,15 @@ class PostgresBackend(BasicBackend):
     name = "postgres"
 
     def search(self, terms, queryset):
+        from django.contrib.postgres.aggregates import StringAgg
         from django.contrib.postgres.search import SearchQuery, SearchRank, SearchVector
 
         if not terms:
             return []
+        queryset = queryset.annotate(tag_text=StringAgg("tags__name", " ", distinct=True))
         vector = (
             SearchVector("title", weight="A")
+            + SearchVector("tag_text", weight="B")
             + SearchVector("excerpt", weight="B")
             + SearchVector("category__name", weight="B")
             + SearchVector("body_text", weight="C")

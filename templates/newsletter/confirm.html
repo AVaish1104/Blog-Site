@@ -13,10 +13,17 @@
       <h1>This link isn’t valid</h1>
       <p class="lede">It may have been copied incompletely. Please subscribe again to get a new link.</p>
       <p class="lede"><a class="btn btn--primary" href="{% url 'newsletter:subscribe' %}">Subscribe</a></p>
-    {% else %}
+    {% elif done or subscriber.status == "active" %}
       <h1>You’re subscribed</h1>
-      <p class="lede">Thanks for confirming <strong>{{ subscriber.email }}</strong>. You’ll get an email when something new is published.</p>
+      <p class="lede">Thanks for confirming <strong>{{ subscriber.email }}</strong>. You’re on the list for emails about new writing from {{ publication.name }}.</p>
       <p class="lede"><a href="{% url 'blog:home' %}">Start reading</a></p>
+    {% else %}
+      <h1>Confirm your subscription</h1>
+      <p class="lede">Confirm that <strong>{{ subscriber.email }}</strong> should receive emails about new writing from {{ publication.name }}.</p>
+      <form method="post">
+        {% csrf_token %}
+        <button class="btn btn--primary" type="submit">Confirm subscription</button>
+      </form>
     {% endif %}
   </div>
 </div>

@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.shortcuts import render
-from django.views.decorators.http import require_GET, require_http_methods
+from django.views.decorators.http import require_http_methods
 
 from apps.core.net import ip_hash
 from apps.core.ratelimit import hit_for_request
@@ -36,13 +36,19 @@ def subscribe(request):
     return render(request, "newsletter/subscribe.html", {"form": form}, status=400)
 
 
-@require_GET
+@require_http_methods(["GET", "POST"])
 def confirm(request, token):
-    subscriber, error = services.confirm(token)
+    # GET only shows a button, so email link scanners can't confirm on someone's behalf.
+    if request.method == "GET":
+        subscriber, error = services.find_by_confirm_token(token)
+        done = False
+    else:
+        subscriber, error = services.confirm(token)
+        done = not error
     return render(
         request,
         "newsletter/confirm.html",
-        {"subscriber": subscriber, "error": error},
+        {"subscriber": subscriber, "error": error, "done": done},
         status=400 if error else 200,
     )
 

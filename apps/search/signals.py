@@ -1,7 +1,7 @@
 """Keep the search index in step with posts, tags and categories."""
 
 from django.db import transaction
-from django.db.models.signals import m2m_changed, post_delete, post_save
+from django.db.models.signals import m2m_changed, post_delete, post_save, pre_delete
 from django.dispatch import receiver
 
 from apps.blog.models import Category, Post, Tag
@@ -52,4 +52,12 @@ def reindex_related_posts(sender, instance, raw=False, created=False, **kwargs):
     if raw or created:
         return
     for post_id in instance.posts.values_list("pk", flat=True):
+        _reindex(post_id)
+
+
+@receiver(pre_delete, sender=Category)
+@receiver(pre_delete, sender=Tag)
+def reindex_posts_losing_a_term(sender, instance, **kwargs):
+    # Collected before the delete; _reindex runs on commit, after the relation is gone.
+    for post_id in list(instance.posts.values_list("pk", flat=True)):
         _reindex(post_id)

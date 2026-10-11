@@ -81,6 +81,8 @@
         <span>© {% now "Y" %} {{ publication.name }}</span>
         {% if user.is_authenticated and user.can_manage_publication %}
           <a href="{% url 'studio:dashboard' %}">Open the studio</a>
+        {% elif user.is_authenticated %}
+          <form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="link-button" type="submit">Sign out ({{ user.get_username }})</button></form>
         {% else %}
           <a href="{% url 'accounts:login' %}">Sign in</a>
         {% endif %}

@@ -102,8 +102,12 @@ def test_duplicate_pending_subscriber_gets_a_fresh_link(client):
 
 def test_confirmation_link_activates(client):
     subscribe(client)
-    response = client.get(confirm_link_from(mail.outbox[0]))
-    assert response.status_code == 200
+    link = confirm_link_from(mail.outbox[0])
+    page = client.get(link)
+    assert page.status_code == 200
+    assert "Confirm subscription" in page.content.decode()
+    assert Subscriber.objects.get().status == Subscriber.Status.PENDING  # GET changes nothing
+    response = client.post(link)
     assert "subscribed" in response.content.decode()
     assert Subscriber.objects.get().status == Subscriber.Status.ACTIVE
 

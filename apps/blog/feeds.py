@@ -15,11 +15,16 @@ class LatestPostsFeed(Feed):
     def description(self):
         return settings.SITE_TAGLINE
 
+    # Absolute URLs from SITE_URL (Django leaves absolute links untouched), so feeds
+    # never depend on the Host header of whoever requested them.
     def link(self):
-        return reverse("blog:home")
+        return settings.SITE_URL + reverse("blog:home")
 
     def feed_url(self):
-        return reverse("blog:feed_rss")
+        return settings.SITE_URL + reverse("blog:feed_rss")
+
+    def item_link(self, item):
+        return settings.SITE_URL + item.get_absolute_url()
 
     def items(self):
         return Post.objects.live().with_relations()[:FEED_SIZE]
@@ -51,4 +56,4 @@ class LatestPostsAtomFeed(LatestPostsFeed):
         return settings.SITE_TAGLINE
 
     def feed_url(self):
-        return reverse("blog:feed_atom")
+        return settings.SITE_URL + reverse("blog:feed_atom")

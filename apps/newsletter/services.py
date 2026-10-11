@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 CONSENT_TEXT = (
     "I agree to receive occasional emails from {site} with new writing. "
-    "I can unsubscribe at any time using the link in every email."
+    "I can unsubscribe at any time using the link included in every email."
 )
 CONFIRM_MAX_AGE = 60 * 60 * 24 * 7
 _CONFIRM_SALT = "newsletter.confirm"
@@ -55,7 +55,15 @@ def normalize_email(email):
 
 
 def confirm_token(subscriber):
-    return signing.dumps({"id": subscriber.pk, "email": subscriber.email}, salt=_CONFIRM_SALT)
+    # Bound to the latest consent: a new sign-up invalidates older confirmation links.
+    return signing.dumps(
+        {
+            "id": subscriber.pk,
+            "email": subscriber.email,
+            "c": int(subscriber.consented_at.timestamp()),
+        },
+        salt=_CONFIRM_SALT,
+    )
 
 
 def unsubscribe_token(subscriber):
@@ -70,7 +78,24 @@ def _load(token, salt, max_age=None):
     except signing.BadSignature:
         return None, "invalid"
     subscriber = Subscriber.objects.filter(pk=data.get("id"), email=data.get("email")).first()
-    return subscriber, None if subscriber else "invalid"
+    if subscriber is None:
+        return None, "invalid"
+    if salt == _CONFIRM_SALT and data.get("c") != int(subscriber.consented_at.timestamp()):
+        return None, "invalid"  # superseded by a newer sign-up
+    return subscriber, None
+
+
+def find_by_confirm_token(token):
+    subscriber, error = _load(token, _CONFIRM_SALT, max_age=CONFIRM_MAX_AGE)
+    if not error and subscriber.status == Subscriber.Status.UNSUBSCRIBED:
+        return None, "invalid"
+    return subscriber, error
+
+
+def unsubscribe_url(subscriber):
+    return settings.SITE_URL + reverse(
+        "newsletter:unsubscribe", args=[unsubscribe_token(subscriber)]
+    )
 
 
 def subscribe(email, *, source="", ip_hash=""):
@@ -80,7 +105,7 @@ def subscribe(email, *, source="", ip_hash=""):
             email=email,
             defaults={
                 "consent_text": consent_text(),
-                "consented_at": timezone.now(),
+                "consented_at": timezone.now().replace(microsecond=0),
                 "source": source[:50],
                 "ip_hash": ip_hash,
             },
@@ -91,7 +116,7 @@ def subscribe(email, *, source="", ip_hash=""):
         if not created:
             subscriber.status = Subscriber.Status.PENDING
             subscriber.consent_text = consent_text()
-            subscriber.consented_at = timezone.now()
+            subscriber.consented_at = timezone.now().replace(microsecond=0)
             subscriber.unsubscribed_at = None
             subscriber.ip_hash = ip_hash
             subscriber.save()
@@ -102,7 +127,11 @@ def send_confirmation(subscriber):
     confirm_url = settings.SITE_URL + reverse(
         "newsletter:confirm", args=[confirm_token(subscriber)]
     )
-    context = {"site_name": settings.SITE_NAME, "confirm_url": confirm_url}
+    context = {
+        "site_name": settings.SITE_NAME,
+        "confirm_url": confirm_url,
+        "unsubscribe_url": unsubscribe_url(subscriber),
+    }
     try:
         send_mail(
             subject=f"Confirm your subscription to {settings.SITE_NAME}",
@@ -117,10 +146,11 @@ def send_confirmation(subscriber):
 
 
 def confirm(token):
-    subscriber, error = _load(token, _CONFIRM_SALT, max_age=CONFIRM_MAX_AGE)
+    subscriber, error = find_by_confirm_token(token)
     if error:
         return None, error
-    if subscriber.status != Subscriber.Status.ACTIVE:
+    # Only a pending sign-up can be confirmed; an unsubscribed address needs a new sign-up.
+    if subscriber.status == Subscriber.Status.PENDING:
         subscriber.status = Subscriber.Status.ACTIVE
         subscriber.confirmed_at = timezone.now()
         subscriber.save(update_fields=["status", "confirmed_at"])

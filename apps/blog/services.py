@@ -19,7 +19,15 @@ def unique_slug(text, model=Post, exclude_pk=None, max_length=200):
     base = make_slug(text, max_length - 4)
     slug, counter = base, 2
     queryset = model.objects.exclude(pk=exclude_pk) if exclude_pk else model.objects.all()
-    while queryset.filter(slug=slug).exists():
+
+    def taken(candidate):
+        if queryset.filter(slug=candidate).exists():
+            return True
+        # Generated post slugs never reuse an address that still redirects elsewhere.
+        redirects = SlugRedirect.objects.filter(old_slug=candidate).exclude(post_id=exclude_pk)
+        return model is Post and redirects.exists()
+
+    while taken(slug):
         slug = f"{base}-{counter}"
         counter += 1
     return slug
@@ -60,8 +68,10 @@ def save_post(post, *, tag_names=None, user=None, previous_slug=None):
     if tag_names is not None:
         post.tags.set(get_or_create_tags(tag_names))
 
-    # A live slug always wins over a redirect with the same name.
-    SlugRedirect.objects.filter(old_slug=post.slug).delete()
+    # A live post takes over its address from any old redirect with the same slug;
+    # drafts and scheduled posts leave existing redirects working until they go live.
+    if post.is_live:
+        SlugRedirect.objects.filter(old_slug=post.slug).delete()
     if previous_slug and previous_slug != post.slug and post.published_at:
         SlugRedirect.objects.update_or_create(old_slug=previous_slug, defaults={"post": post})
     return post
@@ -73,6 +83,7 @@ def publish_now(post, user=None):
         post.published_at = timezone.now()
     post.updated_by = user if user and user.is_authenticated else post.updated_by
     post.save(update_fields=["status", "published_at", "updated_by", "updated_at"])
+    SlugRedirect.objects.filter(old_slug=post.slug).delete()
     return post
 
 
