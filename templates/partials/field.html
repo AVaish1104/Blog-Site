@@ -1,0 +1,17 @@
+{% load ui %}{% if field.is_hidden %}{{ field }}{% elif field.field.widget.input_type == "checkbox" %}
+<div class="field">
+  <label class="check{% if strong %} check--strong{% endif %}" for="{{ field.id_for_label }}">
+    {{ field|widget }}
+    <span>{{ field.label }}</span>
+  </label>
+  {% if field.help_text %}<span class="field-help" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</span>{% endif %}
+  {% if field.errors %}<ul class="field-errors" id="{{ field.auto_id }}_errors">{% for error in field.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+</div>
+{% else %}
+<div class="field{% if field.errors %} field--error{% endif %}">
+  <label for="{{ field.id_for_label }}">{{ label|default:field.label }}{% if field.field.required and not hide_required %} <span class="req" aria-hidden="true">*</span>{% endif %}</label>
+  {% if field.help_text %}<span class="field-help" id="{{ field.auto_id }}_helptext">{{ field.help_text }}</span>{% endif %}
+  {{ field|widget }}
+  {% if field.errors %}<ul class="field-errors" id="{{ field.auto_id }}_errors">{% for error in field.errors %}<li>{{ error }}</li>{% endfor %}</ul>{% endif %}
+</div>
+{% endif %}

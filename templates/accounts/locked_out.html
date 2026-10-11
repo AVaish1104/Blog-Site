@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Sign-in paused · {{ publication.name }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex, nofollow">{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="narrow" role="alert">
+    <span class="kicker">Studio</span>
+    <h1>Sign-in temporarily paused</h1>
+    <p class="lede">There were too many unsuccessful sign-in attempts. For security, please wait 15 minutes and try again.</p>
+    <p class="lede"><a href="{% url 'blog:home' %}">Back to the front page</a></p>
+  </div>
+</div>
+{% endblock %}

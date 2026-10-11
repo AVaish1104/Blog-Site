@@ -1,0 +1,41 @@
+{% extends "studio/base.html" %}
+{% block title %}Images{% endblock %}
+{% block content %}
+<header class="studio-head"><div><h1>Images</h1><p>{{ images|length }} image{{ images|length|pluralize }}. Uploads are checked, resized if very large, and stripped of location metadata.</p></div></header>
+
+<section class="upload-box" aria-labelledby="upload-heading">
+  <h2 id="upload-heading" class="field-label">Upload an image</h2>
+  <form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+    {% include "partials/form_errors.html" %}
+    <div class="upload-box__grid">
+      {% include "partials/field.html" with field=form.file %}
+      {% include "partials/field.html" with field=form.alt_text %}
+      <button class="btn btn--primary" type="submit">Upload</button>
+    </div>
+  </form>
+</section>
+
+{% if images %}
+  <ul class="image-grid" role="list">
+    {% for image in images %}
+      <li class="image-card">
+        <img src="{{ image.url }}" alt="{{ image.alt_text }}" width="{{ image.width }}" height="{{ image.height }}" loading="lazy" decoding="async">
+        <p class="image-card__alt">{{ image.alt_text }} {% if image.is_demo %}<span class="badge badge--demo">Demo</span>{% endif %}</p>
+        <p class="image-card__meta">{{ image.width }}×{{ image.height }} · {{ image.file_size|filesizeformat }} · {{ image.created_at|date:"j M Y" }}</p>
+        <div class="image-card__md">
+          <label class="visually-hidden" for="md-{{ image.pk }}">Markdown for “{{ image.alt_text }}”</label>
+          <input type="text" id="md-{{ image.pk }}" value="{{ image.markdown }}" readonly>
+          <button class="btn btn--small" type="button" data-copy="md-{{ image.pk }}" hidden>Copy</button>
+        </div>
+        <div class="btn-row">
+          <a class="btn btn--small btn--ghost" href="{% url 'studio:image_edit' image.pk %}">Edit alt text</a>
+          <a class="btn btn--small btn--ghost" href="{% url 'studio:image_delete' image.pk %}">Delete…</a>
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <div class="empty"><h2>No images yet</h2><p>Upload an image above to use it as a cover or inside a post.</p></div>
+{% endif %}
+{% endblock %}

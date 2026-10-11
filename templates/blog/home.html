@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load ui newsletter %}
+
+{% block content %}
+{% if featured %}
+  <div class="wrap">
+    <article class="feature{% if not featured.cover_image %} feature--no-image{% endif %}" aria-labelledby="featured-title">
+      <div class="feature__text">
+        <p>
+          <span class="kicker">{% if featured.featured %}Featured{% else %}Latest{% endif %}</span>
+          {% if featured.category %}<span class="kicker" aria-hidden="true">&nbsp;/&nbsp;</span><a class="kicker" href="{{ featured.category.get_absolute_url }}">{{ featured.category.name }}</a>{% endif %}
+        </p>
+        <h1 class="feature__title" id="featured-title"><a href="{{ featured.get_absolute_url }}">{{ featured.title }}</a></h1>
+        <p class="feature__excerpt">{{ featured.summary }}</p>
+        <div class="meta">
+          <a href="{{ featured.author.get_absolute_url }}">{{ featured.author.name }}</a>
+          <time datetime="{{ featured.published_at|date:'c' }}">{{ featured.published_at|date:"j F Y" }}</time>
+          <span>{{ featured.reading_time }} min read</span>
+        </div>
+      </div>
+      {% if featured.cover_image %}
+        <a class="feature__media" href="{{ featured.get_absolute_url }}" tabindex="-1" aria-hidden="true">
+          <img src="{{ featured.cover_image.url }}" alt="" width="{{ featured.cover_image.width }}" height="{{ featured.cover_image.height }}" decoding="async" fetchpriority="high">
+        </a>
+      {% endif %}
+    </article>
+
+    {% if latest %}
+      <section class="home-section" aria-labelledby="latest-heading">
+        <div class="section-head">
+          <h2 id="latest-heading">Latest writing</h2>
+          {% if has_more %}<a class="link-arrow" href="{% url 'blog:post_list' %}">All articles</a>{% endif %}
+        </div>
+        <ul class="post-index" role="list">
+          {% for post in latest %}{% include "partials/post_row.html" with level="h3" %}{% endfor %}
+        </ul>
+      </section>
+    {% endif %}
+
+    <div class="home-lower">
+      {% if categories %}
+        <section aria-labelledby="topics-heading">
+          <div class="section-head">
+            <h2 id="topics-heading">Topics</h2>
+            <a class="link-arrow" href="{% url 'blog:tag_list' %}">Browse tags</a>
+          </div>
+          <ul class="topic-list" role="list">
+            {% for category in categories %}
+              <li>
+                <a href="{{ category.get_absolute_url }}">
+                  <span>
+                    <span class="topic-list__name">{{ category.name }}</span>
+                    {% if category.description %}<span class="topic-list__desc">{{ category.description|truncatechars:110 }}</span>{% endif %}
+                  </span>
+                  <span class="topic-list__count">{{ category.post_count }} article{{ category.post_count|pluralize }}</span>
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </section>
+      {% else %}
+        <div></div>
+      {% endif %}
+      <div>{% newsletter_signup source="home" %}</div>
+    </div>
+  </div>
+{% else %}
+  <div class="wrap">
+    <header class="page-head">
+      <span class="kicker">Welcome</span>
+      <h1>{{ publication.name }}</h1>
+      <p class="page-head__lede">{{ publication.tagline }}</p>
+    </header>
+    <div class="empty">
+      <h2>Nothing has been published yet</h2>
+      <p>New writing will appear here as soon as it's published.</p>
+      {% if user.is_authenticated and user.can_manage_publication %}
+        <div class="btn-row"><a class="btn btn--primary" href="{% url 'studio:post_create' %}">Write the first post</a></div>
+      {% endif %}
+    </div>
+    <div class="home-lower"><div></div><div>{% newsletter_signup source="home" %}</div></div>
+  </div>
+{% endif %}
+{% endblock %}

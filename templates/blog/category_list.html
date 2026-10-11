@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Topics · {{ publication.name }}{% endblock %}
+{% block meta_description %}Browse {{ publication.name }} by topic.{% endblock %}
+{% block og_title %}Topics · {{ publication.name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <header class="page-head">
+    <span class="kicker">Browse</span>
+    <h1>Topics</h1>
+    <p class="page-head__meta"><a href="{% url 'blog:tag_list' %}">Browse by tag instead</a></p>
+  </header>
+  {% if categories %}
+    <ul class="topic-list measure" role="list">
+      {% for category in categories %}
+        <li>
+          <a href="{{ category.get_absolute_url }}">
+            <span>
+              <span class="topic-list__name">{{ category.name }}</span>
+              {% if category.description %}<span class="topic-list__desc">{{ category.description }}</span>{% endif %}
+            </span>
+            <span class="topic-list__count">{{ category.post_count }} article{{ category.post_count|pluralize }}</span>
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <div class="empty"><h2>No topics yet</h2><p>Topics appear here once they are created in the studio.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

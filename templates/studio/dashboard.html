@@ -1,0 +1,74 @@
+{% extends "studio/base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<header class="studio-head">
+  <div>
+    <h1>Dashboard</h1>
+    <p>{% if last_published %}Last published {{ last_published.published_at|timesince }} ago: <a href="{{ last_published.get_absolute_url }}">{{ last_published.title }}</a>{% else %}Nothing has been published yet.{% endif %}</p>
+  </div>
+  <a class="btn btn--primary" href="{% url 'studio:post_create' %}">New post</a>
+</header>
+
+<section aria-label="Publication summary">
+  <div class="stats">
+    <a class="stat" href="{% url 'studio:post_list' %}?state=published"><span class="stat__value">{{ counts.published }}</span><span class="stat__label">Published posts</span></a>
+    <a class="stat" href="{% url 'studio:post_list' %}?state=scheduled"><span class="stat__value">{{ counts.scheduled }}</span><span class="stat__label">Scheduled</span></a>
+    <a class="stat" href="{% url 'studio:post_list' %}?state=draft"><span class="stat__value">{{ counts.drafts }}</span><span class="stat__label">Drafts</span></a>
+    <a class="stat{% if counts.pending_comments %} stat--attention{% endif %}" href="{% url 'studio:comment_list' %}"><span class="stat__value">{{ counts.pending_comments }}</span><span class="stat__label">Comments awaiting review</span></a>
+    <a class="stat" href="{% url 'studio:subscriber_list' %}"><span class="stat__value">{{ counts.subscribers }}</span><span class="stat__label">Confirmed subscribers{% if counts.pending_subscribers %} · {{ counts.pending_subscribers }} unconfirmed{% endif %}</span></a>
+  </div>
+</section>
+
+{% if demo_count %}
+  <div class="notice notice--spaced" role="note">
+    <h2>{{ demo_count }} demo post{{ demo_count|pluralize }}</h2>
+    <p>Sample content created by the setup script is marked <span class="badge badge--demo">Demo</span>. Edit or delete it like any post, or remove all demo content at once with <code>python manage.py seed_demo --clear</code>.</p>
+  </div>
+{% endif %}
+
+<div class="dash-grid">
+  <div>
+    <section class="panel" aria-labelledby="recent-heading">
+      <div class="section-head"><h2 id="recent-heading">Recently edited</h2><a class="link-arrow" href="{% url 'studio:post_list' %}">All posts</a></div>
+      {% if recent %}
+        <ul class="plain-list" role="list">
+          {% for post in recent %}
+            <li>
+              <span><a class="title" href="{% url 'studio:post_edit' post.pk %}">{{ post.title }}</a> {% if post.is_demo %}<span class="badge badge--demo">Demo</span>{% endif %}</span>
+              <span class="aside"><span class="badge badge--{{ post.state }}">{{ post.get_state_display }}</span><br>edited {{ post.updated_at|timesince }} ago</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="panel-empty">No posts yet. <a href="{% url 'studio:post_create' %}">Write your first post</a>.</p>
+      {% endif %}
+    </section>
+  </div>
+  <div>
+    <section class="panel" aria-labelledby="upcoming-heading">
+      <div class="section-head"><h2 id="upcoming-heading">Scheduled</h2></div>
+      {% if upcoming %}
+        <ul class="plain-list" role="list">
+          {% for post in upcoming %}
+            <li><a class="title" href="{% url 'studio:post_edit' post.pk %}">{{ post.title }}</a><span class="aside">{{ post.published_at|date:"j M Y, H:i" }}</span></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="panel-empty">No posts are scheduled. Set a future publication date on a post to schedule it.</p>
+      {% endif %}
+    </section>
+    <section class="panel" aria-labelledby="attention-heading">
+      <div class="section-head"><h2 id="attention-heading">Missing details</h2></div>
+      {% if needs_attention %}
+        <ul class="plain-list" role="list">
+          {% for post in needs_attention %}
+            <li><a class="title" href="{% url 'studio:post_edit' post.pk %}">{{ post.title }}</a><span class="aside">{% if not post.excerpt %}No excerpt{% endif %}{% if not post.excerpt and not post.cover_image_id %} · {% endif %}{% if not post.cover_image_id %}No cover{% endif %}</span></li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="panel-empty">Every published post has an excerpt and a cover image.</p>
+      {% endif %}
+    </section>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Page not found · {{ publication.name }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<div class="wrap error-page">
+  <p class="error-page__code">404 — NOT FOUND</p>
+  <h1>This page doesn’t exist</h1>
+  <p>It may have been moved, unpublished, or the address may be mistyped. Try searching the archive instead.</p>
+  <form class="search-form" role="search" method="get" action="{% url 'blog:search' %}">
+    <label class="visually-hidden" for="nf-q">Search articles</label>
+    <input type="search" id="nf-q" name="q" maxlength="200" placeholder="Search articles">
+    <button class="btn btn--primary" type="submit">Search</button>
+  </form>
+  <p><a href="{% url 'blog:home' %}">Go to the front page</a> · <a href="{% url 'blog:post_list' %}">All articles</a></p>
+</div>
+{% endblock %}

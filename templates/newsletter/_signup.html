@@ -1,0 +1,9 @@
+<section class="newsletter" aria-labelledby="newsletter-heading">
+  {% if heading %}
+    <h2 id="newsletter-heading">Get new writing by email</h2>
+    <p>Occasional emails when something new is published. Unsubscribe in one click from any email.</p>
+  {% else %}
+    <h2 id="newsletter-heading" class="visually-hidden">Newsletter sign-up</h2>
+  {% endif %}
+  {% include "newsletter/_form.html" %}
+</section>

@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}{% if delivery == "sent" or delivery == "skipped" %}Check your inbox{% elif delivery == "logged" %}Request recorded{% else %}Email not sent{% endif %} · {{ publication.name }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="narrow" role="status">
+    <span class="kicker">Newsletter</span>
+    {% if delivery == "sent" or delivery == "skipped" %}
+      <h1>Check your inbox</h1>
+      <p class="lede">If this address isn’t already subscribed, we’ve sent it a confirmation link. Click it to start receiving emails. The link is valid for 7 days.</p>
+    {% elif delivery == "logged" %}
+      <h1>Request recorded — no email was sent</h1>
+      <div class="notice notice--warning">
+        <h2>Email delivery isn’t configured on this server</h2>
+        <p>Your request was saved, but no confirmation email was delivered. In development the confirmation link is printed to the server log. The site owner needs to configure an email provider before subscriptions can be confirmed by email.</p>
+      </div>
+    {% else %}
+      <h1>We couldn’t send the confirmation email</h1>
+      <div class="notice notice--error">
+        <p>Your request was saved, but sending the confirmation email failed. Please try again later.</p>
+      </div>
+    {% endif %}
+    <p class="lede"><a href="{% url 'blog:home' %}">Back to the front page</a></p>
+  </div>
+</div>
+{% endblock %}

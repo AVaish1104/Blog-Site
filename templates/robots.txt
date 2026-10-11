@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /studio/
+Disallow: /search/
+Disallow: /newsletter/confirm/
+Disallow: /newsletter/unsubscribe/
+
+Sitemap: {{ sitemap_url }}

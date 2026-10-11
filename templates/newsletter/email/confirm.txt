@@ -1,0 +1,12 @@
+{% autoescape off %}Hello,
+
+Someone (hopefully you) asked to receive emails from {{ site_name }} at this address.
+
+Confirm your subscription by opening this link:
+
+{{ confirm_url }}
+
+The link is valid for 7 days. If you didn't ask for this, ignore this email and you won't hear from us again.
+
+— {{ site_name }}
+{% endautoescape %}

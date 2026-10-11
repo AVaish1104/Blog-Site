@@ -1,0 +1,7 @@
+<ul class="messages" role="status" aria-live="polite">
+  {% for message in messages %}
+    <li class="message message--{% if message.tags == 'error' %}error{% elif message.tags %}{{ message.tags }}{% else %}info{% endif %}">
+      {% if message.tags == "error" %}<strong>Error:</strong> {% elif message.tags == "success" %}<strong>Done.</strong> {% endif %}{{ message }}
+    </li>
+  {% endfor %}
+</ul>

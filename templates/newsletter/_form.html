@@ -1,0 +1,12 @@
+<form method="post" action="{% url 'newsletter:subscribe' %}" novalidate>
+  {% csrf_token %}
+  {{ form.source }}
+  <div class="honeypot" aria-hidden="true">
+    <label for="{{ form.website.id_for_label }}">Leave this field empty</label>
+    {{ form.website }}
+  </div>
+  {% include "partials/form_errors.html" %}
+  {% include "partials/field.html" with field=form.email %}
+  {% include "partials/field.html" with field=form.consent %}
+  <button class="btn btn--primary" type="submit">Subscribe</button>
+</form>

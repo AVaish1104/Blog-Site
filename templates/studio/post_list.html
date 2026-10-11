@@ -1,0 +1,67 @@
+{% extends "studio/base.html" %}
+{% block title %}Posts{% endblock %}
+{% block content %}
+<header class="studio-head">
+  <div><h1>Posts</h1><p>{{ state_counts.all }} total</p></div>
+  <a class="btn btn--primary" href="{% url 'studio:post_create' %}">New post</a>
+</header>
+
+<div class="filters">
+  <ul class="tabs" role="list" aria-label="Filter by status">
+    {% for value, label in states %}
+      <li><a href="?state={{ value }}{% if query %}&amp;q={{ query|urlencode }}{% endif %}"{% if state == value %} aria-current="page"{% endif %}>{{ label }} <span class="n">{% for k, n in state_counts.items %}{% if k == value %}{{ n }}{% endif %}{% endfor %}</span></a></li>
+    {% endfor %}
+  </ul>
+  <form class="filter-search" method="get" role="search">
+    <input type="hidden" name="state" value="{{ state }}">
+    <label class="visually-hidden" for="post-q">Search posts by title or slug</label>
+    <input type="search" id="post-q" name="q" value="{{ query }}" placeholder="Search by title or slug">
+    <button class="btn btn--small" type="submit">Search</button>
+  </form>
+</div>
+
+{% if posts %}
+  <div class="table-wrap">
+    <table class="table table--stack">
+      <thead>
+        <tr><th scope="col">Title</th><th scope="col">Status</th><th scope="col">Author</th><th scope="col">Date</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr>
+      </thead>
+      <tbody>
+        {% for post in posts %}
+          <tr>
+            <td class="primary">
+              <a class="title" href="{% url 'studio:post_edit' post.pk %}">{{ post.title }}</a>
+              {% if post.is_demo %}<span class="badge badge--demo">Demo</span>{% endif %}
+              {% if post.featured %}<span class="badge">Featured</span>{% endif %}
+              <span class="sub">/posts/{{ post.slug }}/{% if post.category %} · {{ post.category.name }}{% endif %}</span>
+            </td>
+            <td data-label="Status"><span class="badge badge--{{ post.state }}">{{ post.get_state_display }}</span></td>
+            <td data-label="Author">{{ post.author.name }}</td>
+            <td data-label="Date">
+              {% if post.state == "draft" %}Edited {{ post.updated_at|date:"j M Y" }}{% elif post.state == "scheduled" %}{{ post.published_at|date:"j M Y, H:i" }}{% else %}{{ post.published_at|date:"j M Y" }}{% endif %}
+            </td>
+            <td class="actions">
+              <a class="btn btn--small btn--ghost" href="{% url 'studio:post_edit' post.pk %}">Edit</a>
+              {% if post.is_live %}<a class="btn btn--small btn--ghost" href="{{ post.get_absolute_url }}">View<span class="visually-hidden"> “{{ post.title }}”</span></a>{% else %}<a class="btn btn--small btn--ghost" href="{% url 'studio:post_saved_preview' post.pk %}">Preview<span class="visually-hidden"> “{{ post.title }}”</span></a>{% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "partials/pagination.html" with page=page_obj query_prefix=filter_prefix %}
+{% else %}
+  <div class="empty">
+    {% if query %}
+      <h2>No posts match “{{ query }}”</h2><p>Try a different search, or clear the filter.</p>
+      <div class="btn-row"><a class="btn" href="?state={{ state }}">Clear search</a></div>
+    {% elif state != "all" %}
+      <h2>No {{ state }} posts</h2><p>Posts in this state will be listed here.</p>
+      <div class="btn-row"><a class="btn" href="?state=all">Show all posts</a></div>
+    {% else %}
+      <h2>No posts yet</h2><p>Your posts — drafts, scheduled and published — will be listed here.</p>
+      <div class="btn-row"><a class="btn btn--primary" href="{% url 'studio:post_create' %}">Write your first post</a></div>
+    {% endif %}
+  </div>
+{% endif %}
+{% endblock %}

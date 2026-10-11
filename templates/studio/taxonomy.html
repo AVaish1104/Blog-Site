@@ -1,0 +1,61 @@
+{% extends "studio/base.html" %}
+{% block title %}Topics & tags{% endblock %}
+{% block content %}
+<header class="studio-head"><div><h1>Topics &amp; tags</h1><p>Each post has one topic and any number of tags. Tags are created from the post editor.</p></div></header>
+<div class="two-col">
+  <section aria-labelledby="topics-heading">
+    <div class="section-head"><h2 id="topics-heading">Topics ({{ categories|length }})</h2></div>
+    {% if categories %}
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th scope="col">Topic</th><th scope="col" class="num">Posts</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+          <tbody>
+            {% for category in categories %}
+              <tr>
+                <td><a class="title" href="{% url 'studio:category_edit' category.pk %}">{{ category.name }}</a>{% if category.is_demo %} <span class="badge badge--demo">Demo</span>{% endif %}<span class="sub">/topics/{{ category.slug }}/</span></td>
+                <td class="num">{{ category.n }}</td>
+                <td class="actions"><a class="btn btn--small btn--ghost" href="{% url 'studio:category_edit' category.pk %}">Edit</a><a class="btn btn--small btn--ghost" href="{% url 'studio:category_delete' category.pk %}">Delete…</a></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="panel-empty">No topics yet.</p>
+    {% endif %}
+
+    <form method="post" class="form-narrow form-spaced" novalidate>
+      {% csrf_token %}
+      <h3 class="field-label">Add a topic</h3>
+      {% include "partials/form_errors.html" with form=category_form %}
+      {% include "partials/field.html" with field=category_form.name %}
+      {% include "partials/field.html" with field=category_form.slug %}
+      {% include "partials/field.html" with field=category_form.description %}
+      {% include "partials/field.html" with field=category_form.position %}
+      <button class="btn btn--primary" type="submit">Add topic</button>
+    </form>
+  </section>
+
+  <section aria-labelledby="tags-heading">
+    <div class="section-head"><h2 id="tags-heading">Tags ({{ tags|length }})</h2></div>
+    {% if tags %}
+      <div class="table-wrap">
+        <table class="table">
+          <thead><tr><th scope="col">Tag</th><th scope="col" class="num">Posts</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+          <tbody>
+            {% for tag in tags %}
+              <tr>
+                <td><a class="title" href="{% url 'studio:tag_edit' tag.pk %}">{{ tag.name }}</a><span class="sub">/tags/{{ tag.slug }}/</span></td>
+                <td class="num">{{ tag.n }}</td>
+                <td class="actions"><a class="btn btn--small btn--ghost" href="{% url 'studio:tag_edit' tag.pk %}">Edit</a><a class="btn btn--small btn--ghost" href="{% url 'studio:tag_delete' tag.pk %}">Delete…</a></td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p class="panel-empty">No tags yet. Add tags to a post in the editor and they will appear here.</p>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

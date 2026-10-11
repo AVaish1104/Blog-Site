@@ -1,0 +1,145 @@
+{% extends "studio/base.html" %}
+{% load ui %}
+{% block title %}{% if post %}Edit “{{ post.title|truncatechars:40 }}”{% else %}New post{% endif %}{% endblock %}
+{% block content %}
+<header class="studio-head">
+  <div>
+    <p class="crumb"><a href="{% url 'studio:post_list' %}">Posts</a> /</p>
+    <h1>{% if post %}Edit post{% else %}New post{% endif %}</h1>
+  </div>
+  {% if post %}
+    <div class="btn-row">
+      {% if post.is_live %}
+        <a class="btn btn--small" href="{{ post.get_absolute_url }}">View live ↗</a>
+        <form method="post" action="{% url 'studio:post_unpublish' post.pk %}">{% csrf_token %}<button class="btn btn--small" type="submit">Unpublish</button></form>
+      {% elif post.state == "draft" %}
+        <form method="post" action="{% url 'studio:post_publish' post.pk %}">{% csrf_token %}<button class="btn btn--small" type="submit">Publish now</button></form>
+      {% else %}
+        <form method="post" action="{% url 'studio:post_publish' post.pk %}">{% csrf_token %}<button class="btn btn--small" type="submit">Publish now instead</button></form>
+        <form method="post" action="{% url 'studio:post_unpublish' post.pk %}">{% csrf_token %}<button class="btn btn--small" type="submit">Unschedule</button></form>
+      {% endif %}
+      <a class="btn btn--small btn--danger" href="{% url 'studio:post_delete' post.pk %}">Delete…</a>
+    </div>
+  {% endif %}
+</header>
+
+{% if not has_authors %}
+  <div class="notice notice--warning notice--spaced" role="alert">
+    <h2>Create an author first</h2>
+    <p>Every post needs an author. <a href="{% url 'studio:author_create' %}">Add an author profile</a>, then come back to write.</p>
+  </div>
+{% endif %}
+
+<form method="post" enctype="multipart/form-data" novalidate data-editor{% if post %} data-post-id="{{ post.pk }}"{% endif %}>
+  {% csrf_token %}
+  {% if post %}<input type="hidden" name="post_id" value="{{ post.pk }}">{% endif %}
+  {% include "partials/form_errors.html" %}
+
+  <div class="editor">
+    <div class="editor__main">
+      <div class="field{% if form.title.errors %} field--error{% endif %}">
+        <label for="{{ form.title.id_for_label }}">Title <span class="req" aria-hidden="true">*</span></label>
+        {{ form.title|widget }}
+        {% if form.title.errors %}<ul class="field-errors" id="{{ form.title.auto_id }}_errors">{% for e in form.title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+
+      <div class="field{% if form.slug.errors %} field--error{% endif %}">
+        <label for="{{ form.slug.id_for_label }}">Slug</label>
+        <span class="field-help" id="{{ form.slug.auto_id }}_helptext">{{ form.slug.help_text }}{% if post and post.published_at %} Changing it keeps the old address working with a redirect.{% endif %}</span>
+        <div class="slug-row"><span class="prefix" aria-hidden="true">/posts/</span>{{ form.slug|widget }}</div>
+        {% if form.slug.errors %}<ul class="field-errors" id="{{ form.slug.auto_id }}_errors">{% for e in form.slug.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+
+      <div class="field{% if form.excerpt.errors %} field--error{% endif %}">
+        <label for="{{ form.excerpt.id_for_label }}">Excerpt <span class="counter" data-counter-for="{{ form.excerpt.id_for_label }}" data-max="400" aria-hidden="true"></span></label>
+        <span class="field-help" id="{{ form.excerpt.auto_id }}_helptext">{{ form.excerpt.help_text }}</span>
+        {{ form.excerpt|widget }}
+        {% if form.excerpt.errors %}<ul class="field-errors" id="{{ form.excerpt.auto_id }}_errors">{% for e in form.excerpt.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+      </div>
+
+      <div class="field{% if form.body.errors %} field--error{% endif %}">
+        <label for="{{ form.body.id_for_label }}">Body</label>
+        <span class="field-help" id="{{ form.body.auto_id }}_helptext">{{ form.body.help_text }}</span>
+        <div class="md-toolbar" role="toolbar" aria-label="Formatting" aria-controls="{{ form.body.id_for_label }}" data-md-toolbar hidden>
+          <button type="button" data-md="heading" title="Heading">H2</button>
+          <button type="button" data-md="subheading" title="Subheading">H3</button>
+          <span class="sep" aria-hidden="true"></span>
+          <button type="button" data-md="bold" title="Bold"><strong>B</strong></button>
+          <button type="button" data-md="italic" title="Italic"><em>I</em></button>
+          <button type="button" data-md="link" title="Link">Link</button>
+          <span class="sep" aria-hidden="true"></span>
+          <button type="button" data-md="quote" title="Quote">Quote</button>
+          <button type="button" data-md="list" title="Bulleted list">List</button>
+          <button type="button" data-md="numbered" title="Numbered list">1. List</button>
+          <button type="button" data-md="code" title="Code">Code</button>
+          <button type="button" data-md="rule" title="Section break">Break</button>
+        </div>
+        {{ form.body|widget }}
+        {% if form.body.errors %}<ul class="field-errors" id="{{ form.body.auto_id }}_errors">{% for e in form.body.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        <span class="field-help"><span data-wordcount aria-live="polite"></span>To embed an image, copy its Markdown from the <a href="{% url 'studio:image_list' %}" target="_blank" rel="noopener">image library</a>.</span>
+      </div>
+
+      <details class="disclosure"{% if form.seo_title.errors or form.seo_description.errors %} open{% endif %}>
+        <summary>Search &amp; social preview</summary>
+        <div class="field">
+          <label for="{{ form.seo_title.id_for_label }}">{{ form.seo_title.label }} <span class="counter" data-counter-for="{{ form.seo_title.id_for_label }}" data-max="70" aria-hidden="true"></span></label>
+          <span class="field-help" id="{{ form.seo_title.auto_id }}_helptext">{{ form.seo_title.help_text }}</span>
+          {{ form.seo_title|widget }}
+          {% if form.seo_title.errors %}<ul class="field-errors" id="{{ form.seo_title.auto_id }}_errors">{% for e in form.seo_title.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+        <div class="field">
+          <label for="{{ form.seo_description.id_for_label }}">{{ form.seo_description.label }} <span class="counter" data-counter-for="{{ form.seo_description.id_for_label }}" data-max="200" aria-hidden="true"></span></label>
+          <span class="field-help" id="{{ form.seo_description.auto_id }}_helptext">{{ form.seo_description.help_text }}</span>
+          {{ form.seo_description|widget }}
+          {% if form.seo_description.errors %}<ul class="field-errors" id="{{ form.seo_description.auto_id }}_errors">{% for e in form.seo_description.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </div>
+      </details>
+    </div>
+
+    <aside class="editor__side" aria-label="Post settings">
+      <section class="editor-box editor-box--publish" aria-labelledby="publish-heading">
+        <h2 id="publish-heading">Publishing</h2>
+        <p class="state-line">
+          {% if post %}<span class="badge badge--{{ post.state }}">{{ post.get_state_display }}</span>
+            {% if post.state == "scheduled" %}goes live {{ post.published_at|date:"j M Y, H:i" }}{% elif post.state == "published" %}since {{ post.published_at|date:"j M Y" }}{% else %}last saved {{ post.updated_at|timesince }} ago{% endif %}
+          {% else %}<span class="badge badge--draft">Not saved</span>{% endif %}
+        </p>
+        <fieldset class="field radio-row">
+          <legend class="field-label">Status</legend>
+          {{ form.status }}
+          {% if form.status.errors %}<ul class="field-errors">{% for e in form.status.errors %}<li>{{ e }}</li>{% endfor %}</ul>{% endif %}
+        </fieldset>
+        {% include "partials/field.html" with field=form.published_at %}
+        <div class="editor-actions">
+          <button class="btn btn--primary" type="submit">Save</button>
+          <button class="btn" type="submit" formaction="{% url 'studio:post_preview' %}" formtarget="_blank" formnovalidate data-preview>Preview ↗</button>
+        </div>
+      </section>
+
+      <section class="editor-box" aria-labelledby="details-heading">
+        <h2 id="details-heading">Details</h2>
+        {% include "partials/field.html" with field=form.author %}
+        {% include "partials/field.html" with field=form.category %}
+        {% include "partials/field.html" with field=form.tags %}
+        <datalist id="tag-suggestions">{% for name in tag_names %}<option value="{{ name }}">{% endfor %}</datalist>
+      </section>
+
+      <section class="editor-box" aria-labelledby="cover-heading">
+        <h2 id="cover-heading">Cover image</h2>
+        {% if post.cover_image %}
+          <div class="cover-preview"><img src="{{ post.cover_image.url }}" alt="Current cover: {{ post.cover_image.alt_text }}" width="{{ post.cover_image.width }}" height="{{ post.cover_image.height }}"></div>
+        {% endif %}
+        {% include "partials/field.html" with field=form.cover_image %}
+        {% include "partials/field.html" with field=form.new_cover %}
+        {% include "partials/field.html" with field=form.new_cover_alt %}
+      </section>
+
+      <section class="editor-box" aria-labelledby="options-heading">
+        <h2 id="options-heading">Options</h2>
+        {% include "partials/field.html" with field=form.featured %}
+        {% include "partials/field.html" with field=form.allow_comments %}
+      </section>
+    </aside>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Tags · {{ publication.name }}{% endblock %}
+{% block meta_description %}Every tag used on {{ publication.name }}.{% endblock %}
+{% block og_title %}Tags · {{ publication.name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <header class="page-head">
+    <span class="kicker">Browse</span>
+    <h1>Tags</h1>
+    <p class="page-head__meta"><a href="{% url 'blog:category_list' %}">Browse by topic instead</a></p>
+  </header>
+  {% if tags %}
+    <ul class="tag-cloud" role="list">
+      {% for tag in tags %}<li><a href="{{ tag.get_absolute_url }}">{{ tag.name }} <span class="count">{{ tag.post_count }}</span></a></li>{% endfor %}
+    </ul>
+  {% else %}
+    <div class="empty"><h2>No tags yet</h2><p>Tags appear here once published articles use them.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

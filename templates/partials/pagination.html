@@ -1,0 +1,21 @@
+{% if page.has_other_pages %}
+<nav class="pagination" aria-label="Pagination">
+  <div class="pagination__edge">
+    {% if page.has_previous %}<a href="?{% if query_prefix %}{{ query_prefix }}&amp;{% endif %}page={{ page.previous_page_number }}" rel="prev">← Newer</a>{% endif %}
+  </div>
+  <ol>
+    {% for number in page.paginator.page_range %}
+      {% if number == page.number %}
+        <li><span aria-current="page">{{ number }}</span></li>
+      {% elif number == 1 or number == page.paginator.num_pages or number >= page.number|add:"-2" and number <= page.number|add:"2" %}
+        <li><a href="?{% if query_prefix %}{{ query_prefix }}&amp;{% endif %}page={{ number }}" aria-label="Page {{ number }}">{{ number }}</a></li>
+      {% elif number == page.number|add:"-3" or number == page.number|add:"3" %}
+        <li><span aria-hidden="true">…</span></li>
+      {% endif %}
+    {% endfor %}
+  </ol>
+  <div class="pagination__edge pagination__edge--next">
+    {% if page.has_next %}<a href="?{% if query_prefix %}{{ query_prefix }}&amp;{% endif %}page={{ page.next_page_number }}" rel="next">Older →</a>{% endif %}
+  </div>
+</nav>
+{% endif %}

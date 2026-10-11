@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% load ui %}
+
+{% block title %}{{ post.meta_title }} · {{ publication.name }}{% endblock %}
+{% block meta_description %}{{ post.meta_description }}{% endblock %}
+{% block robots %}{% if preview %}<meta name="robots" content="noindex, nofollow">{% endif %}{% endblock %}
+{% block og_title %}{{ post.meta_title }}{% endblock %}
+{% block og_description %}{{ post.meta_description }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_image %}{% if post.cover_image %}
+  <meta property="og:image" content="{{ post.cover_image.url|absolute_url }}">
+  <meta property="og:image:alt" content="{{ post.cover_image.alt_text }}">
+  <meta property="og:image:width" content="{{ post.cover_image.width }}">
+  <meta property="og:image:height" content="{{ post.cover_image.height }}">
+{% endif %}{% if post.published_at %}
+  <meta property="article:published_time" content="{{ post.published_at|date:'c' }}">
+  <meta property="article:modified_time" content="{{ post.updated_at|date:'c' }}">{% endif %}
+  {% if post.category %}<meta property="article:section" content="{{ post.category.name }}">{% endif %}
+  {% for tag in post_tags %}<meta property="article:tag" content="{{ tag.name }}">{% endfor %}
+{% endblock %}
+{% block twitter_card %}{% if post.cover_image %}summary_large_image{% else %}summary{% endif %}{% endblock %}
+
+{% block extra_head %}{% if not preview %}{% jsonld article_ld %}{% endif %}{% endblock %}
+
+{% block banner %}{% if preview %}
+  <div class="preview-banner" role="note">Preview — {{ preview_note|default:"this is how the article will look. It is not public until published." }}</div>
+{% endif %}{% endblock %}
+
+{% block content %}
+<article class="article" aria-labelledby="article-title">
+  <header class="wrap article-head">
+    <div class="article-head__inner">
+      {% if post.category %}<a class="kicker" href="{{ post.category.get_absolute_url }}">{{ post.category.name }}</a>{% endif %}
+      <h1 class="article-title" id="article-title">{{ post.title }}</h1>
+      {% if post.excerpt %}<p class="article-dek">{{ post.excerpt }}</p>{% endif %}
+      <div class="byline">
+        <div class="meta">
+          <span>By <a class="byline__author" href="{{ post.author.get_absolute_url }}">{{ post.author.name }}</a></span>
+          {% if post.published_at %}
+            <time datetime="{{ post.published_at|date:'c' }}">{{ post.published_at|date:"j F Y" }}</time>
+          {% else %}
+            <span>Not yet published</span>
+          {% endif %}
+          <span>{{ post.reading_time }} min read</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  {% if post.cover_image %}
+    <figure class="wrap article-cover">
+      <img src="{{ post.cover_image.url }}" alt="{{ post.cover_image.alt_text }}" width="{{ post.cover_image.width }}" height="{{ post.cover_image.height }}" decoding="async" fetchpriority="high">
+    </figure>
+  {% endif %}
+
+  <div class="wrap article-layout">
+    <aside class="article-aside" aria-label="Article details">
+      <dl>
+        <div><dt>Written by</dt><dd><a href="{{ post.author.get_absolute_url }}">{{ post.author.name }}</a></dd></div>
+        {% if post.published_at %}<div><dt>Published</dt><dd>{{ post.published_at|date:"j F Y" }}</dd></div>{% endif %}
+        <div><dt>Length</dt><dd>{{ post.word_count }} words</dd></div>
+        {% if post.category %}<div><dt>Topic</dt><dd><a href="{{ post.category.get_absolute_url }}">{{ post.category.name }}</a></dd></div>{% endif %}
+      </dl>
+    </aside>
+
+    <div class="prose">
+      {% if post.body_html %}{{ post.body_html|safe }}{% else %}<p><em>This post has no body text yet.</em></p>{% endif %}
+    </div>
+
+    <footer class="article-foot">
+      {% if post_tags %}
+        <div class="article-tags">
+          <h2>Filed under</h2>
+          <ul class="tag-cloud" role="list">
+            {% for tag in post_tags %}<li><a href="{{ tag.get_absolute_url }}">{{ tag.name }}</a></li>{% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      <section class="author-card" aria-label="About the author">
+        {% if post.author.avatar %}
+          <img class="author-card__avatar" src="{{ post.author.avatar.url }}" alt="" width="64" height="64" loading="lazy">
+        {% else %}
+          <span class="author-initial" aria-hidden="true">{{ post.author.name|initial }}</span>
+        {% endif %}
+        <div>
+          <p class="author-card__label">Written by</p>
+          <p class="author-card__name"><a href="{{ post.author.get_absolute_url }}">{{ post.author.name }}</a></p>
+          {% if post.author.bio %}<p class="author-card__bio">{{ post.author.bio|truncatewords:60 }}</p>{% endif %}
+        </div>
+      </section>
+
+      {% if post.is_demo %}
+        <p class="demo-note">This is sample content created by the setup script so the site has something to show on first run. It can be removed from the studio or with <code>manage.py seed_demo --clear</code>.</p>
+      {% endif %}
+
+      {% if not preview and older or not preview and newer %}
+        <nav class="pager-adjacent" aria-label="More articles">
+          {% if older %}
+            <a href="{{ older.get_absolute_url }}" rel="prev"><span class="pager-adjacent__label">← Previous</span><span class="pager-adjacent__title">{{ older.title }}</span></a>
+          {% endif %}
+          {% if newer %}
+            <a class="pager-adjacent__next" href="{{ newer.get_absolute_url }}" rel="next"><span class="pager-adjacent__label">Next →</span><span class="pager-adjacent__title">{{ newer.title }}</span></a>
+          {% endif %}
+        </nav>
+      {% endif %}
+
+      {% if not preview %}{% include "comments/_section.html" %}{% endif %}
+    </footer>
+  </div>
+</article>
+
+{% if related and not preview %}
+  <section class="wrap related" aria-labelledby="related-heading">
+    <div class="section-head"><h2 id="related-heading">Keep reading</h2><a class="link-arrow" href="{% url 'blog:post_list' %}">All articles</a></div>
+    <ul class="related__grid" role="list">
+      {% for item in related %}
+        <li>
+          {% if item.cover_image %}<a href="{{ item.get_absolute_url }}" tabindex="-1" aria-hidden="true"><img src="{{ item.cover_image.url }}" alt="" width="{{ item.cover_image.width }}" height="{{ item.cover_image.height }}" loading="lazy" decoding="async"></a>{% endif %}
+          {% if item.category %}<span class="kicker">{{ item.category.name }}</span>{% endif %}
+          <h3><a href="{{ item.get_absolute_url }}">{{ item.title }}</a></h3>
+          <p>{{ item.summary|truncatewords:24 }}</p>
+          <div class="meta"><span>{{ item.reading_time }} min read</span></div>
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endif %}
+{% endblock %}

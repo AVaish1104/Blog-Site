@@ -1,0 +1,27 @@
+{% extends "studio/base.html" %}
+{% block title %}Authors{% endblock %}
+{% block content %}
+<header class="studio-head">
+  <div><h1>Authors</h1><p>Author profiles appear on articles and have their own public page.</p></div>
+  <a class="btn btn--primary" href="{% url 'studio:author_create' %}">New author</a>
+</header>
+{% if authors %}
+  <div class="table-wrap">
+    <table class="table table--stack">
+      <thead><tr><th scope="col">Name</th><th scope="col">Sign-in account</th><th scope="col" class="num">Posts</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+      <tbody>
+        {% for author in authors %}
+          <tr>
+            <td class="primary"><a class="title" href="{% url 'studio:author_edit' author.pk %}">{{ author.name }}</a>{% if author.is_demo %} <span class="badge badge--demo">Demo</span>{% endif %}<span class="sub">/authors/{{ author.slug }}/</span></td>
+            <td data-label="Account">{% if author.user %}{{ author.user.get_username }}{% else %}<span class="muted">None</span>{% endif %}</td>
+            <td data-label="Posts" class="num">{{ author.n }}</td>
+            <td class="actions"><a class="btn btn--small btn--ghost" href="{{ author.get_absolute_url }}">View<span class="visually-hidden"> {{ author.name }}</span></a><a class="btn btn--small btn--ghost" href="{% url 'studio:author_edit' author.pk %}">Edit</a><a class="btn btn--small btn--ghost" href="{% url 'studio:author_delete' author.pk %}">Delete…</a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% else %}
+  <div class="empty"><h2>No authors yet</h2><p>Create an author profile before writing your first post.</p><div class="btn-row"><a class="btn btn--primary" href="{% url 'studio:author_create' %}">New author</a></div></div>
+{% endif %}
+{% endblock %}

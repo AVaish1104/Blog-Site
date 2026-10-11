@@ -1,0 +1,91 @@
+{% load static ui %}<!doctype html>
+<html lang="{{ publication.language }}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ publication.name }} — {{ publication.tagline }}{% endblock %}</title>
+  <meta name="description" content="{% block meta_description %}{{ publication.tagline }}{% endblock %}">
+  {% block robots %}{% endblock %}
+  <link rel="canonical" href="{{ publication.url }}{% block canonical %}{{ request.path }}{% endblock %}">
+  <meta property="og:site_name" content="{{ publication.name }}">
+  <meta property="og:title" content="{% block og_title %}{{ publication.name }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ publication.tagline }}{% endblock %}">
+  <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+  <meta property="og:url" content="{{ publication.url }}{{ request.path }}">
+  {% block og_image %}{% endblock %}
+  <meta name="twitter:card" content="{% block twitter_card %}summary{% endblock %}">
+  <link rel="alternate" type="application/rss+xml" title="{{ publication.name }} (RSS)" href="{% url 'blog:feed_rss' %}">
+  <link rel="alternate" type="application/atom+xml" title="{{ publication.name }} (Atom)" href="{% url 'blog:feed_atom' %}">
+  <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
+  <link rel="preload" href="{% static 'fonts/newsreader-opsz-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="{% static 'fonts/instrument-sans-wght-normal.woff2' %}" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  {% block extra_head %}{% endblock %}
+  <script src="{% static 'js/site.js' %}"></script>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="skip-link" href="#main">Skip to content</a>
+  {% if ephemeral_data %}<p class="demo-banner" role="note"><strong>Demo deployment.</strong> Nothing is saved permanently: content resets to the sample articles from time to time, and changes or sign-ups may disappear.</p>{% endif %}
+  {% block banner %}{% endblock %}
+  <header class="site-header">
+    <div class="wrap site-header__inner">
+      <a class="wordmark" href="{% url 'blog:home' %}"{% nav_current 'blog:home' %}>{{ publication.name }}<span aria-hidden="true">.</span></a>
+      <button class="nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="site-nav">
+        <span class="nav-toggle__bars" aria-hidden="true"></span> Menu
+      </button>
+      <nav class="site-nav" id="site-nav" aria-label="Main">
+        <ul>
+          <li><a href="{% url 'blog:post_list' %}"{% nav_current 'blog:post_list' %}>Articles</a></li>
+          <li><a href="{% url 'blog:category_list' %}"{% nav_current 'blog:category_list' 'blog:category_detail' %}>Topics</a></li>
+          <li><a href="{% url 'blog:search' %}"{% nav_current 'blog:search' %}>Search</a></li>
+          <li><a class="nav-subscribe" href="{% url 'newsletter:subscribe' %}"{% nav_current 'newsletter:subscribe' %}>Subscribe</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  {% if messages %}
+    <div class="wrap">{% include "partials/messages.html" %}</div>
+  {% endif %}
+
+  <main id="main" tabindex="-1">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <div class="site-footer__grid">
+        <div class="site-footer__brand">
+          <a class="wordmark" href="{% url 'blog:home' %}">{{ publication.name }}<span aria-hidden="true">.</span></a>
+          <p>{{ publication.tagline }}</p>
+        </div>
+        <nav aria-label="Browse">
+          <h2>Browse</h2>
+          <ul>
+            <li><a href="{% url 'blog:post_list' %}">All articles</a></li>
+            <li><a href="{% url 'blog:category_list' %}">Topics</a></li>
+            <li><a href="{% url 'blog:tag_list' %}">Tags</a></li>
+            <li><a href="{% url 'blog:search' %}">Search</a></li>
+          </ul>
+        </nav>
+        <nav aria-label="Follow">
+          <h2>Follow</h2>
+          <ul>
+            <li><a href="{% url 'newsletter:subscribe' %}">Newsletter</a></li>
+            <li><a href="{% url 'blog:feed_rss' %}">RSS feed</a></li>
+            <li><a href="{% url 'blog:feed_atom' %}">Atom feed</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="site-footer__base">
+        <span>© {% now "Y" %} {{ publication.name }}</span>
+        {% if user.is_authenticated and user.can_manage_publication %}
+          <a href="{% url 'studio:dashboard' %}">Open the studio</a>
+        {% else %}
+          <a href="{% url 'accounts:login' %}">Sign in</a>
+        {% endif %}
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

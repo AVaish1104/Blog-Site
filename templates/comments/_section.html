@@ -1,0 +1,42 @@
+<section class="comments" id="comments" aria-labelledby="comments-heading">
+  <div class="section-head">
+    <h2 id="comments-heading">Comments{% if comments %} ({{ comments|length }}){% endif %}</h2>
+  </div>
+  {% if comments %}
+    <ol class="comment-list" role="list">
+      {% for comment in comments %}
+        <li class="comment" id="comment-{{ comment.pk }}">
+          <div class="comment__head">
+            <span class="comment__author">{{ comment.author_name }}</span>
+            <time class="comment__date" datetime="{{ comment.created_at|date:'c' }}">{{ comment.created_at|date:"j F Y" }}</time>
+          </div>
+          <div class="comment__body">{{ comment.body|linebreaks }}</div>
+        </li>
+      {% endfor %}
+    </ol>
+  {% elif comment_form %}
+    <p class="comments__empty">No comments yet.</p>
+  {% endif %}
+
+  {% if comment_form %}
+    <form class="comment-form" method="post" action="{% url 'blog:post_comment' post.slug %}#comments" novalidate>
+      {% csrf_token %}
+      <h3 class="field-label">Leave a comment</h3>
+      <p class="field-help">Comments are reviewed before they appear. Your email address is never published. Plain text only.</p>
+      {% include "partials/form_errors.html" with form=comment_form %}
+      {{ comment_form.issued }}
+      <div class="honeypot" aria-hidden="true">
+        <label for="{{ comment_form.website.id_for_label }}">Leave this field empty</label>
+        {{ comment_form.website }}
+      </div>
+      <div class="comment-form__grid">
+        {% include "partials/field.html" with field=comment_form.author_name %}
+        {% include "partials/field.html" with field=comment_form.author_email %}
+      </div>
+      {% include "partials/field.html" with field=comment_form.body %}
+      <button class="btn btn--primary" type="submit">Submit comment</button>
+    </form>
+  {% else %}
+    <p class="comments__empty">Comments are closed for this article.</p>
+  {% endif %}
+</section>

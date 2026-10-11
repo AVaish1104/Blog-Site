@@ -1,0 +1,21 @@
+<li class="post-row{% if not post.cover_image %} post-row--no-thumb{% endif %}">
+  <time class="post-row__date" datetime="{{ post.published_at|date:'c' }}">{{ post.published_at|date:"j M Y" }}</time>
+  <div>
+    <{{ level|default:"h2" }} class="post-row__title"><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></{{ level|default:"h2" }}>
+    {% if post.snippet %}
+      <p class="post-row__snippet">{{ post.snippet }}</p>
+    {% else %}
+      <p class="post-row__excerpt">{{ post.summary }}</p>
+    {% endif %}
+    <div class="meta">
+      {% if post.category %}<a href="{{ post.category.get_absolute_url }}">{{ post.category.name }}</a>{% endif %}
+      {% if show_author %}<span>{{ post.author.name }}</span>{% endif %}
+      <span>{{ post.reading_time }} min read</span>
+    </div>
+  </div>
+  {% if post.cover_image %}
+    <a class="post-row__thumb" href="{{ post.get_absolute_url }}" tabindex="-1" aria-hidden="true">
+      <img src="{{ post.cover_image.url }}" alt="" width="240" height="240" loading="lazy" decoding="async">
+    </a>
+  {% endif %}
+</li>

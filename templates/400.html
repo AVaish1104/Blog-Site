@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Bad request · {{ publication.name }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<div class="wrap error-page">
+  <p class="error-page__code">400 — BAD REQUEST</p>
+  <h1>That request couldn’t be processed</h1>
+  <p>Please go back and try again.</p>
+  <p><a href="{% url 'blog:home' %}">Go to the front page</a></p>
+</div>
+{% endblock %}

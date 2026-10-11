@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block title %}{{ author.name }}{% if page.number > 1 %} — page {{ page.number }}{% endif %} · {{ publication.name }}{% endblock %}
+{% block meta_description %}{% if author.bio %}{{ author.bio|truncatechars:200 }}{% else %}Articles by {{ author.name }} on {{ publication.name }}.{% endif %}{% endblock %}
+{% block canonical %}{{ request.path }}{% if page.number > 1 %}?page={{ page.number }}{% endif %}{% endblock %}
+{% block og_title %}{{ author.name }} · {{ publication.name }}{% endblock %}
+{% block og_type %}profile{% endblock %}
+{% block content %}
+<div class="wrap">
+  <header class="page-head">
+    <span class="kicker">Author</span>
+    <h1>{{ author.name }}</h1>
+    {% if author.bio %}<p class="page-head__lede">{{ author.bio|linebreaksbr }}</p>{% endif %}
+    {% if author.website %}<p class="page-head__meta"><a href="{{ author.website }}" rel="me noopener">{{ author.website|cut:"https://"|cut:"http://"|truncatechars:60 }}</a></p>{% endif %}
+  </header>
+  <div class="section-head"><h2>Articles by {{ author.name }} ({{ page.paginator.count }})</h2></div>
+  {% if page.object_list %}
+    <ul class="post-index" role="list">{% for post in page.object_list %}{% include "partials/post_row.html" with level="h3" %}{% endfor %}</ul>
+    {% include "partials/pagination.html" %}
+  {% else %}
+    <div class="empty"><h2>No published articles yet</h2><p>Articles by {{ author.name }} will appear here.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

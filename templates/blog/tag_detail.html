@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Tagged “{{ tag.name }}”{% if page.number > 1 %} — page {{ page.number }}{% endif %} · {{ publication.name }}{% endblock %}
+{% block meta_description %}Articles tagged {{ tag.name }} on {{ publication.name }}.{% endblock %}
+{% block canonical %}{{ request.path }}{% if page.number > 1 %}?page={{ page.number }}{% endif %}{% endblock %}
+{% block og_title %}{{ tag.name }} · {{ publication.name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <header class="page-head">
+    <a class="kicker" href="{% url 'blog:tag_list' %}">Tag</a>
+    <h1>{{ tag.name }}</h1>
+    <p class="page-head__meta">{{ page.paginator.count }} article{{ page.paginator.count|pluralize }}</p>
+  </header>
+  {% if page.object_list %}
+    <ul class="post-index" role="list">{% for post in page.object_list %}{% include "partials/post_row.html" with show_author=True %}{% endfor %}</ul>
+    {% include "partials/pagination.html" %}
+  {% else %}
+    <div class="empty"><h2>Nothing here yet</h2><p>No published articles use this tag.</p><div class="btn-row"><a class="btn" href="{% url 'blog:tag_list' %}">All tags</a></div></div>
+  {% endif %}
+</div>
+{% endblock %}

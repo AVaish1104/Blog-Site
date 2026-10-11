@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Subscription · {{ publication.name }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex">{% endblock %}
+{% block content %}
+<div class="wrap">
+  <div class="narrow">
+    <span class="kicker">Newsletter</span>
+    {% if error == "expired" %}
+      <h1>This link has expired</h1>
+      <p class="lede">Confirmation links last 7 days. Please subscribe again to get a fresh link.</p>
+      <p class="lede"><a class="btn btn--primary" href="{% url 'newsletter:subscribe' %}">Subscribe again</a></p>
+    {% elif error %}
+      <h1>This link isn’t valid</h1>
+      <p class="lede">It may have been copied incompletely. Please subscribe again to get a new link.</p>
+      <p class="lede"><a class="btn btn--primary" href="{% url 'newsletter:subscribe' %}">Subscribe</a></p>
+    {% else %}
+      <h1>You’re subscribed</h1>
+      <p class="lede">Thanks for confirming <strong>{{ subscriber.email }}</strong>. You’ll get an email when something new is published.</p>
+      <p class="lede"><a href="{% url 'blog:home' %}">Start reading</a></p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{% if outcome.query %}Search: {{ outcome.query }}{% else %}Search{% endif %} · {{ publication.name }}{% endblock %}
+{% block robots %}<meta name="robots" content="noindex, follow">{% endblock %}
+{% block canonical %}{{ request.path }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <header class="page-head">
+    <span class="kicker">Search</span>
+    <h1>{% if outcome.query %}Results for “{{ outcome.query|truncatechars:60 }}”{% else %}Search the archive{% endif %}</h1>
+    <form class="search-form" role="search" method="get" action="{% url 'blog:search' %}">
+      <label class="visually-hidden" for="search-q">Search articles</label>
+      <input type="search" id="search-q" name="q" value="{{ outcome.query }}" maxlength="200" placeholder="Search titles, articles and tags"{% if not outcome.query %} autofocus{% endif %}>
+      <button class="btn btn--primary" type="submit">Search</button>
+    </form>
+  </header>
+
+  {% if outcome.error %}
+    <div class="notice notice--error" role="alert"><h2>That search couldn’t be run</h2><p>{{ outcome.error }}</p></div>
+  {% elif not outcome.query %}
+    <p class="search-summary">Search looks through every published article’s title, summary, text, topic and tags.</p>
+  {% elif page and page.object_list %}
+    <p class="search-summary" role="status">{{ page.paginator.count }} result{{ page.paginator.count|pluralize }}{% if page.paginator.num_pages > 1 %} · page {{ page.number }} of {{ page.paginator.num_pages }}{% endif %}</p>
+    <ul class="post-index" role="list">{% for post in page.object_list %}{% include "partials/post_row.html" with show_author=True %}{% endfor %}</ul>
+    {% include "partials/pagination.html" with query_prefix=search_prefix %}
+  {% else %}
+    <div class="empty" role="status">
+      <h2>No articles matched</h2>
+      <p>Try fewer or different words, check the spelling, or browse by topic.</p>
+      <div class="btn-row"><a class="btn" href="{% url 'blog:category_list' %}">Browse topics</a><a class="btn" href="{% url 'blog:post_list' %}">All articles</a></div>
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

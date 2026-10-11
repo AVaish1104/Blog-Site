@@ -1,0 +1,49 @@
+{% extends "studio/base.html" %}
+{% block title %}Comments{% endblock %}
+{% block content %}
+<header class="studio-head"><div><h1>Comments</h1><p>Comments are only shown publicly after you approve them.</p></div></header>
+
+<div class="filters">
+  <ul class="tabs" role="list" aria-label="Filter by status">
+    {% for value, label, n in statuses %}
+      <li><a href="?status={{ value }}"{% if status == value %} aria-current="page"{% endif %}>{{ label }} <span class="n">{{ n }}</span></a></li>
+    {% endfor %}
+  </ul>
+</div>
+
+{% if comments %}
+  <ul class="plain-list" role="list">
+    {% for comment in comments %}
+      <li class="comment-mod">
+        <div class="comment-mod__head">
+          <strong>{{ comment.author_name }}</strong>
+          <span class="muted">{{ comment.author_email }}</span>
+          <span class="badge badge--{{ comment.status }}">{{ comment.get_status_display }}</span>
+          <span class="muted">on <a href="{% if comment.post.is_live %}{{ comment.post.get_absolute_url }}#comment-{{ comment.pk }}{% else %}{% url 'studio:post_edit' comment.post.pk %}{% endif %}">{{ comment.post.title }}</a> · {{ comment.created_at|date:"j M Y, H:i" }}</span>
+        </div>
+        <div class="comment-mod__body">{{ comment.body|linebreaks }}</div>
+        <div class="btn-row">
+          <form method="post" action="{% url 'studio:comment_moderate' comment.pk %}">
+            {% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            {% if comment.status != "approved" %}<button class="btn btn--small btn--primary" name="action" value="approve">Approve</button>{% endif %}
+            {% if comment.status != "pending" %}<button class="btn btn--small" name="action" value="pending">Move to review</button>{% endif %}
+            {% if comment.status != "rejected" %}<button class="btn btn--small" name="action" value="reject">Reject</button>{% endif %}
+            {% if comment.status != "spam" %}<button class="btn btn--small" name="action" value="spam">Spam</button>{% endif %}
+          </form>
+          <a class="btn btn--small btn--ghost" href="#delete-{{ comment.pk }}">Delete…</a>
+        </div>
+        <form method="post" action="{% url 'studio:comment_moderate' comment.pk %}" id="delete-{{ comment.pk }}" class="inline-confirm">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{{ request.get_full_path }}">
+          <span>Permanently delete this comment?</span>
+          <button class="btn btn--small btn--danger-solid" name="action" value="delete">Yes, delete</button>
+        </form>
+      </li>
+    {% endfor %}
+  </ul>
+  {% include "partials/pagination.html" with page=page_obj query_prefix="status="|add:status %}
+{% else %}
+  <div class="empty"><h2>{% if status == "pending" %}Nothing awaiting review{% else %}No comments here{% endif %}</h2><p>{% if status == "pending" %}New comments will appear here for approval.{% else %}Comments with this status will be listed here.{% endif %}</p></div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,56 @@
+{% load static ui %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>{% block title %}Studio{% endblock %} · {{ publication.name }} Studio</title>
+  <link rel="icon" href="{% static 'favicon.svg' %}" type="image/svg+xml">
+  <link rel="stylesheet" href="{% static 'css/site.css' %}">
+  <link rel="stylesheet" href="{% static 'css/studio.css' %}">
+  <script src="{% static 'js/site.js' %}"></script>
+  <script src="{% static 'js/studio.js' %}" defer></script>
+</head>
+<body class="studio">
+  <a class="skip-link" href="#main">Skip to content</a>
+  {% if ephemeral_data %}<p class="demo-banner" role="note"><strong>Demo deployment.</strong> Nothing is saved permanently: content resets to the sample articles from time to time, and changes or sign-ups may disappear.</p>{% endif %}
+  <div class="studio-shell">
+    <header class="studio-side">
+      <div class="studio-side__top">
+        <a class="wordmark" href="{% url 'studio:dashboard' %}">{{ publication.name }}<span aria-hidden="true">.</span></a>
+        <span class="studio-side__label">Studio</span>
+        <button class="nav-toggle studio-nav-toggle" type="button" data-nav-toggle aria-expanded="false" aria-controls="site-nav">
+          <span class="nav-toggle__bars" aria-hidden="true"></span> Menu
+        </button>
+      </div>
+      <nav class="studio-nav" id="site-nav" aria-label="Studio">
+        <a class="btn btn--primary studio-nav__new" href="{% url 'studio:post_create' %}">New post</a>
+        <ul role="list">
+          <li><a href="{% url 'studio:dashboard' %}"{% nav_current 'studio:dashboard' %}>Dashboard</a></li>
+          <li><a href="{% url 'studio:post_list' %}"{% nav_current 'studio:post_list' 'studio:post_edit' 'studio:post_delete' %}>Posts</a></li>
+          <li><a href="{% url 'studio:image_list' %}"{% nav_current 'studio:image_list' 'studio:image_edit' 'studio:image_delete' %}>Images</a></li>
+          <li><a href="{% url 'studio:taxonomy' %}"{% nav_current 'studio:taxonomy' 'studio:category_edit' 'studio:tag_edit' 'studio:category_delete' 'studio:tag_delete' %}>Topics &amp; tags</a></li>
+          <li><a href="{% url 'studio:author_list' %}"{% nav_current 'studio:author_list' 'studio:author_create' 'studio:author_edit' 'studio:author_delete' %}>Authors</a></li>
+          <li><a href="{% url 'studio:comment_list' %}"{% nav_current 'studio:comment_list' %}>Comments{% if studio_pending_comments %} <span class="count-pill" aria-label="{{ studio_pending_comments }} awaiting review">{{ studio_pending_comments }}</span>{% endif %}</a></li>
+          <li><a href="{% url 'studio:subscriber_list' %}"{% nav_current 'studio:subscriber_list' 'studio:subscriber_delete' %}>Subscribers</a></li>
+        </ul>
+        <ul class="studio-nav__secondary" role="list">
+          <li><a href="{% url 'blog:home' %}">View site ↗</a></li>
+          <li><a href="{% url 'accounts:password_change' %}"{% nav_current 'accounts:password_change' %}>Change password</a></li>
+          <li>
+            <form method="post" action="{% url 'accounts:logout' %}">
+              {% csrf_token %}
+              <button class="link-button" type="submit">Sign out <span class="muted">({{ user.get_username }})</span></button>
+            </form>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <main class="studio-main" id="main" tabindex="-1">
+      {% if messages %}{% include "partials/messages.html" %}{% endif %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+</body>
+</html>

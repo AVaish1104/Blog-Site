@@ -1,0 +1,48 @@
+{% extends "studio/base.html" %}
+{% block title %}Subscribers{% endblock %}
+{% block content %}
+<header class="studio-head">
+  <div>
+    <h1>Subscribers</h1>
+    <p>{% if email_delivery == "smtp" %}Confirmation emails are sent through your email provider.{% else %}No email provider is configured: confirmation emails are written to the server log, not delivered.{% endif %}</p>
+  </div>
+  <a class="btn" href="{% url 'studio:subscriber_export' %}?status={{ status|default:'active' }}">Export {% if status %}{{ status }}{% else %}confirmed{% endif %} as CSV</a>
+</header>
+
+<div class="filters">
+  <ul class="tabs" role="list" aria-label="Filter by status">
+    <li><a href="?"{% if not status %} aria-current="page"{% endif %}>All <span class="n">{{ all_count }}</span></a></li>
+    {% for value, label, n in statuses %}
+      <li><a href="?status={{ value }}"{% if status == value %} aria-current="page"{% endif %}>{{ label }} <span class="n">{{ n }}</span></a></li>
+    {% endfor %}
+  </ul>
+  <form class="filter-search" method="get" role="search">
+    <input type="hidden" name="status" value="{{ status }}">
+    <label class="visually-hidden" for="sub-q">Search by email</label>
+    <input type="search" id="sub-q" name="q" value="{{ query }}" placeholder="Search by email">
+    <button class="btn btn--small" type="submit">Search</button>
+  </form>
+</div>
+
+{% if subscribers %}
+  <div class="table-wrap">
+    <table class="table table--stack">
+      <thead><tr><th scope="col">Email</th><th scope="col">Status</th><th scope="col">Signed up</th><th scope="col">Confirmed</th><th scope="col"><span class="visually-hidden">Actions</span></th></tr></thead>
+      <tbody>
+        {% for sub in subscribers %}
+          <tr>
+            <td class="primary">{{ sub.email }}{% if sub.source %}<span class="sub">via {{ sub.source }}</span>{% endif %}</td>
+            <td data-label="Status"><span class="badge badge--{{ sub.status }}">{{ sub.get_status_display }}</span></td>
+            <td data-label="Signed up">{{ sub.created_at|date:"j M Y" }}</td>
+            <td data-label="Confirmed">{% if sub.confirmed_at %}{{ sub.confirmed_at|date:"j M Y" }}{% else %}<span class="muted">—</span>{% endif %}</td>
+            <td class="actions"><a class="btn btn--small btn--ghost" href="{% url 'studio:subscriber_delete' sub.pk %}">Erase…<span class="visually-hidden"> {{ sub.email }}</span></a></td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% include "partials/pagination.html" with page=page_obj query_prefix=filter_prefix %}
+{% else %}
+  <div class="empty"><h2>{% if query or status %}No matching subscribers{% else %}No subscribers yet{% endif %}</h2><p>People who sign up through the newsletter form will be listed here.</p></div>
+{% endif %}
+{% endblock %}

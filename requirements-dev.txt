@@ -1,0 +1,8 @@
+-r requirements.txt
+factory_boy==3.3.3
+pytest==9.1.1
+pytest-playwright==0.10.0
+axe-playwright-python==0.1.8
+pytest-cov==7.1.0
+pytest-django==4.14.0
+ruff==0.17.0

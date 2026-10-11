@@ -1,0 +1,17 @@
+{% extends "studio/base.html" %}
+{% block title %}Confirm deletion{% endblock %}
+{% block content %}
+<header class="studio-head"><div><h1>Delete {{ object_label }}?</h1></div></header>
+<div class="confirm">
+  <div class="notice notice--error" role="alert">
+    <h2>Please confirm</h2>
+    <ul>{% for line in consequences %}<li>{{ line }}</li>{% endfor %}</ul>
+  </div>
+  {% if preview_image %}<img src="{{ preview_image.url }}" alt="{{ preview_image.alt_text }}" width="{{ preview_image.width }}" height="{{ preview_image.height }}">{% endif %}
+  <form method="post" class="btn-row">
+    {% csrf_token %}
+    <button class="btn btn--danger-solid" type="submit">{{ confirm_label }}</button>
+    <a class="btn btn--ghost" href="{{ cancel_url }}">Cancel</a>
+  </form>
+</div>
+{% endblock %}

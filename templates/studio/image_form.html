@@ -1,0 +1,14 @@
+{% extends "studio/base.html" %}
+{% block title %}Edit image{% endblock %}
+{% block content %}
+<header class="studio-head"><div><p class="crumb"><a href="{% url 'studio:image_list' %}">Images</a> /</p><h1>Edit alt text</h1></div></header>
+<div class="two-col">
+  <form method="post" class="form-narrow" novalidate>
+    {% csrf_token %}
+    {% include "partials/form_errors.html" %}
+    {% include "partials/field.html" with field=form.alt_text %}
+    <div class="btn-row"><button class="btn btn--primary" type="submit">Save</button><a class="btn btn--ghost" href="{% url 'studio:image_list' %}">Cancel</a></div>
+  </form>
+  <div><img src="{{ image.url }}" alt="{{ image.alt_text }}" width="{{ image.width }}" height="{{ image.height }}"></div>
+</div>
+{% endblock %}
